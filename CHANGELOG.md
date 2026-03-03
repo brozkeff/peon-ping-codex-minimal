@@ -19,16 +19,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Hardened `peon.sh` runtime input handling:
-  - Bounded stdin payload size and JSON file size reads.
-  - Enforced `default_pack` allowlist format to block traversal-style values.
-  - Enforced manifest structure checks for categories/sounds.
-  - Rejected unsafe/invalid sound file references and non-files.
-  - Preserved path confinement to pack root and validated output volume type.
-- Hardened `adapters/codex.sh`:
-  - Validate runtime path exists and is executable before invocation.
-  - Bound stdin parsing size and require string-valued event fields.
-  - Execute resolved runtime script directly instead of invoking by unconstrained path.
-- Hardened `scripts/codex-notify.sh`:
-  - Reject oversized notification JSON argument values.
-  - Require JSON object payload and string `type` field.
+- Resolved `Critical` code-injection risk in `peon.sh` by removing shell `eval`
+  from the Python-to-shell handoff and replacing it with explicit key parsing.
+- Resolved `High` pack path-traversal risk in `peon.sh`:
+  - Added strict allowlist validation for `default_pack`.
+  - Enforced `packs/` root confinement with canonical path checks.
+- Resolved `High` manifest trust risk in `peon.sh`:
+  - Added defensive JSON loading with size limits.
+  - Validated manifest/category/sound structure before sound selection.
+  - Rejected unsafe filename values (empty, absolute, control chars).
+- Resolved `Medium` runtime invocation risk in `adapters/codex.sh`:
+  - Resolve and validate runtime script path and executability before running.
+  - Require string event fields during JSON extraction.
+  - Execute resolved runtime script directly.
+- Resolved `Medium` JSON handling risk in `scripts/codex-notify.sh`:
+  - Reject oversized JSON argument payloads.
+  - Require object payload and string `type` value.

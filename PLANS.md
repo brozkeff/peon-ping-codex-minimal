@@ -1,20 +1,21 @@
 # Security Review Plan
 
-## Findings
+## Completed (Iteration 1)
 
-- [x] `Critical` [`peon.sh`](./peon.sh):24 used `eval` on dynamically generated output. Fixed by replacing with structured key/value parsing and explicit assignments.
-- [x] `High` [`peon.sh`](./peon.sh):52 and [`peon.sh`](./peon.sh):94 trusted `default_pack` from `config.json` without strict validation. Fixed by allowlist validation and pack-root confinement checks.
-- [x] `High` [`peon.sh`](./peon.sh):96-112 trusted manifest shape and sound entries without schema checks. Fixed by strict type/shape checks and filename safety filtering.
-- [x] `Medium` [`adapters/codex.sh`](./adapters/codex.sh):80 executed runtime script from env-derived `PEON_DIR` without verifying expected target exists/executable. Fixed by resolving and validating runtime script before execution.
-- [x] `Medium` [`scripts/codex-notify.sh`](./scripts/codex-notify.sh):14-22 parsed unbounded JSON argument and accepted any object shape. Fixed with payload-size cap and object/string field checks.
-- [x] `Medium` Missing [`CHANGELOG.md`](./CHANGELOG.md) and no explicit security-fix history. Fixed by adding Keep a Changelog file and README link.
+- `Critical` [`peon.sh`](./peon.sh): removed dynamic shell `eval` execution path and replaced with structured output parsing.
+- `High` [`peon.sh`](./peon.sh): validated `default_pack` with allowlist format and enforced pack-root confinement.
+- `High` [`peon.sh`](./peon.sh): added manifest and sound-entry type/shape validation.
+- `Medium` [`adapters/codex.sh`](./adapters/codex.sh): added runtime script resolution and executable checks before launch.
+- `Medium` [`scripts/codex-notify.sh`](./scripts/codex-notify.sh): added JSON payload size cap and object/string field validation.
+- `Medium` project docs: added `CHANGELOG.md` and linked from `README.md`.
 
-## Fix Plan
+## New Audit Queue (Iteration 2)
 
-- [x] 1. Replace `eval` in `peon.sh` with structured parsing and explicit variable assignment.
-- [x] 2. Add strict validation for `default_pack`, manifest schema, filename safety, and input size/type checks in `peon.sh`.
-- [x] 3. Harden adapter/runtime invocation checks in `adapters/codex.sh`.
-- [x] 4. Harden `scripts/codex-notify.sh` JSON input handling (size/type validation).
-- [x] 5. Create `CHANGELOG.md` in Keep a Changelog format and log each completed fix.
-- [x] 6. Update README to link `CHANGELOG.md`.
-- [x] 7. Mark each completed step in this file.
+- [ ] `Medium` [`peon.sh`](./peon.sh):22 reads unbounded stdin into a shell variable before parser-level limits are applied.
+- [ ] `Medium` [`adapters/codex.sh`](./adapters/codex.sh):15 reads unbounded stdin into `RAW_STDIN` before parser-level limits are applied.
+
+## Iteration 2 Plan
+
+- [ ] 1. Bound shell-level stdin reads in runtime and adapter scripts.
+- [ ] 2. Re-run shell syntax checks and targeted grep-based audit.
+- [ ] 3. Capture new audit result summary in this file and `CHANGELOG.md`.

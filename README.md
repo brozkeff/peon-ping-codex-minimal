@@ -34,6 +34,8 @@ peon-ping-codex-minimal/
   VERSION
   LICENSE
   README.md
+  CHANGELOG.md
+  PLANS.md
   config.json
   peon.sh
   adapters/
