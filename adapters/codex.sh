@@ -3,8 +3,13 @@
 set -euo pipefail
 
 PEON_DIR="${CLAUDE_PEON_DIR:-$HOME/.codex/peon-ping}"
+RUNTIME_SCRIPT="$(realpath "$PEON_DIR/peon.sh" 2>/dev/null || true)"
 CODEX_EVENT="${1:-}"
 RAW_STDIN=""
+
+if [ -z "$RUNTIME_SCRIPT" ] || [ ! -f "$RUNTIME_SCRIPT" ] || [ ! -x "$RUNTIME_SCRIPT" ]; then
+  exit 0
+fi
 
 if [ ! -t 0 ]; then
   RAW_STDIN="$(cat || true)"
@@ -15,12 +20,23 @@ if [ -z "$CODEX_EVENT" ]; then
 fi
 
 if [ -z "$CODEX_EVENT" ] && [ -n "$RAW_STDIN" ]; then
-  CODEX_EVENT="$(python3 -c '
+CODEX_EVENT="$(python3 -c '
 import json
 import re
 import sys
 
-data = sys.stdin.read().strip()
+MAX_STDIN_BYTES = 64 * 1024
+data = sys.stdin.buffer.read(MAX_STDIN_BYTES + 1)
+if len(data) > MAX_STDIN_BYTES:
+    print("")
+    raise SystemExit(0)
+
+try:
+    data = data.decode("utf-8").strip()
+except Exception:
+    print("")
+    raise SystemExit(0)
+
 if not data:
     print("")
     raise SystemExit(0)
@@ -42,8 +58,8 @@ if isinstance(obj, dict):
     )
     for key in fields:
         value = obj.get(key)
-        if value:
-            print(str(value))
+        if isinstance(value, str) and value:
+            print(value)
             raise SystemExit(0)
 
 match = re.search(r"(agent[-_ ]turn[-_ ]complete|session[-_ ]start|permission|approve|error|fail|complete|done|stop)", data, re.I)
@@ -77,4 +93,4 @@ print(json.dumps({
     "cwd": os.environ["_PC"],
     "session_id": os.environ["_PS"],
 }))
-' | bash "$PEON_DIR/peon.sh"
+' | "$RUNTIME_SCRIPT"

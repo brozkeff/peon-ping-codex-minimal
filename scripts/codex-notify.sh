@@ -11,12 +11,20 @@ if [ -z "$NOTIFICATION_JSON" ]; then
   exit 0
 fi
 
+if [ "${#NOTIFICATION_JSON}" -gt 65536 ]; then
+  exit 0
+fi
+
 TYPE="$(python3 -c '
 import json
 import sys
 try:
     payload = json.loads(sys.argv[1])
-    print(payload.get("type", ""))
+    if not isinstance(payload, dict):
+        print("")
+    else:
+        value = payload.get("type", "")
+        print(value if isinstance(value, str) else "")
 except Exception:
     print("")
 ' "$NOTIFICATION_JSON" 2>/dev/null || true)"
