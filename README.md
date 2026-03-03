@@ -8,7 +8,7 @@ Project change history: [CHANGELOG.md](CHANGELOG.md)
 
 This repo contains one supported integration path:
 
-- `scripts/codex-notify.sh`: simple notify hook for `agent-turn-complete`
+- `scripts/codex-notify.py`: simple notify hook for `agent-turn-complete`
 
 ## Scope
 
@@ -27,7 +27,7 @@ peon-ping-codex-minimal/
   CHANGELOG.md
   PLANS.md
   scripts/
-    codex-notify.sh
+    codex-notify.py
     install-user.sh
   packs/
     peon-minimal/
@@ -42,7 +42,7 @@ peon-ping-codex-minimal/
 - `bash`
 - `python3`
 - Audio player(s):
-  - Supported by `scripts/codex-notify.sh`:
+  - Supported by `scripts/codex-notify.py`:
     - `paplay` (recommended)
     - or `aplay` (`wav` only)
     - or `ffplay`
@@ -67,7 +67,7 @@ bash scripts/install-user.sh
 This installs:
 
 - `~/.codex/peon-ping/VERSION`
-- `~/.codex/peon-ping/scripts/codex-notify.sh`
+- `~/.codex/peon-ping/scripts/codex-notify.py`
 - `~/.codex/peon-ping/packs/peon-minimal/sounds/*`
 
 ## Codex hook setup
@@ -75,7 +75,7 @@ This installs:
 Set notify hook in `~/.codex/config.toml`:
 
 ```toml
-notify = ["bash", "$HOME/.codex/peon-ping/scripts/codex-notify.sh"]
+notify = ["python3", "$HOME/.codex/peon-ping/scripts/codex-notify.py"]
 ```
 
 This uses the simple hook path and plays a random bundled sound only when notification `type` is `agent-turn-complete`.

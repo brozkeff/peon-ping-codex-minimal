@@ -6,6 +6,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.12.0~20260303T175159Z] - 2026-03-03
+
+### Changed
+
+- Replaced shell notify hook with a minimal Python notify hook: `scripts/codex-notify.py`.
+- Updated installer and README hook setup to use `notify = ["python3", ".../scripts/codex-notify.py"]`.
+
+### Removed
+
+- Removed `scripts/codex-notify.sh`.
+
 ## [2.12.0~20260303T173739Z] - 2026-03-03
 
 ### Changed

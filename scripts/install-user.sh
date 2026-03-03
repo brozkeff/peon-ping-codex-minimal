@@ -8,7 +8,7 @@ DEST_DIR="$HOME/.codex/peon-ping"
 mkdir -p "$DEST_DIR/scripts" "$DEST_DIR/packs/peon-minimal/sounds"
 
 install -m 644 "$SRC_DIR/VERSION" "$DEST_DIR/VERSION"
-install -m 755 "$SRC_DIR/scripts/codex-notify.sh" "$DEST_DIR/scripts/codex-notify.sh"
+install -m 755 "$SRC_DIR/scripts/codex-notify.py" "$DEST_DIR/scripts/codex-notify.py"
 
 shopt -s nullglob
 for f in "$SRC_DIR"/packs/peon-minimal/sounds/*.{ogg,wav}; do
@@ -24,4 +24,4 @@ fi
 
 echo "Installed to: $DEST_DIR"
 echo "Set $HOME/.codex/config.toml notify to:"
-printf 'notify = ["bash", "%s"]\n' "$DEST_DIR/scripts/codex-notify.sh"
+printf 'notify = ["python3", "%s"]\n' "$DEST_DIR/scripts/codex-notify.py"
