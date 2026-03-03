@@ -1,0 +1,6 @@
+.state.json
+.sound.pid
+.paused
+*.pyc
+__pycache__/
+.DS_Store
