@@ -21,45 +21,74 @@ PAUSED=false
 [ -f "$PEON_DIR/.paused" ] && PAUSED=true
 INPUT=$(cat)
 
-eval "$(PEON_CONFIG="$CONFIG" PEON_STATE="$STATE" PEON_DIR="$PEON_DIR" PEON_PAUSED="$PAUSED" python3 -c '
+PY_OUT="$(PEON_CONFIG="$CONFIG" PEON_STATE="$STATE" PEON_DIR="$PEON_DIR" PEON_PAUSED="$PAUSED" python3 -c '
+import base64
 import json
 import os
 import random
-import shlex
+import re
 import sys
 
-q = shlex.quote
+MAX_EVENT_BYTES = 64 * 1024
+MAX_JSON_FILE_BYTES = 1024 * 1024
+
 config_path = os.environ["PEON_CONFIG"]
 state_file = os.environ["PEON_STATE"]
 peon_dir = os.environ["PEON_DIR"]
 paused = os.environ["PEON_PAUSED"] == "true"
 
-try:
-    cfg = json.load(open(config_path))
-except Exception:
+def exit_now():
+    print("PEON_EXIT=true")
+    raise SystemExit(0)
+
+def load_json_file(path, default):
+    try:
+        with open(path, "rb") as handle:
+            data = handle.read(MAX_JSON_FILE_BYTES + 1)
+        if len(data) > MAX_JSON_FILE_BYTES:
+            return default
+        value = json.loads(data.decode("utf-8"))
+        return value
+    except Exception:
+        return default
+
+cfg = load_json_file(config_path, {})
+if not isinstance(cfg, dict):
     cfg = {}
 
 if str(cfg.get("enabled", True)).lower() == "false":
-    print("PEON_EXIT=true")
-    sys.exit(0)
+    exit_now()
 
-volume = float(cfg.get("volume", 0.5))
+try:
+    volume = float(cfg.get("volume", 0.5))
+except Exception:
+    volume = 0.5
 if volume < 0:
     volume = 0.0
 if volume > 1:
     volume = 1.0
 paplay_volume = int(volume * 65536)
 active_pack = cfg.get("default_pack", "peon-minimal")
+if not isinstance(active_pack, str):
+    active_pack = "peon-minimal"
+if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}", active_pack):
+    active_pack = "peon-minimal"
 cats = cfg.get("categories", {})
+if not isinstance(cats, dict):
+    cats = {}
 
 def enabled(cat, default=True):
     return str(cats.get(cat, default)).lower() == "true"
 
 try:
-    event_data = json.loads(sys.stdin.read())
+    raw_event = sys.stdin.buffer.read(MAX_EVENT_BYTES + 1)
+    if len(raw_event) > MAX_EVENT_BYTES:
+        exit_now()
+    event_data = json.loads(raw_event.decode("utf-8"))
 except Exception:
-    print("PEON_EXIT=true")
-    sys.exit(0)
+    exit_now()
+if not isinstance(event_data, dict):
+    exit_now()
 
 event = event_data.get("hook_event_name", "")
 if event == "Notification" and event_data.get("notification_type") == "permission_prompt":
@@ -75,36 +104,60 @@ elif event == "PermissionRequest":
 elif event == "PostToolUseFailure":
     category = "task.error"
 else:
-    print("PEON_EXIT=true")
-    sys.exit(0)
+    exit_now()
 
 if not enabled(category, True):
-    print("PEON_EXIT=true")
-    sys.exit(0)
+    exit_now()
 
 if paused:
-    print("PEON_EXIT=true")
-    sys.exit(0)
+    exit_now()
 
-try:
-    state = json.load(open(state_file))
-except Exception:
+state = load_json_file(state_file, {})
+if not isinstance(state, dict):
     state = {}
 
 pack_dir = os.path.join(peon_dir, "packs", active_pack)
+pack_dir = os.path.realpath(pack_dir)
+packs_root = os.path.realpath(os.path.join(peon_dir, "packs")) + os.sep
+if not pack_dir.startswith(packs_root):
+    exit_now()
 manifest = {}
 for mname in ("openpeon.json", "manifest.json"):
     mpath = os.path.join(pack_dir, mname)
     if os.path.exists(mpath):
-        manifest = json.load(open(mpath))
+        manifest = load_json_file(mpath, {})
         break
+if not isinstance(manifest, dict):
+    manifest = {}
 
-sounds = manifest.get("categories", {}).get(category, {}).get("sounds", [])
+all_categories = manifest.get("categories", {})
+if not isinstance(all_categories, dict):
+    all_categories = {}
+category_data = all_categories.get(category, {})
+if not isinstance(category_data, dict):
+    category_data = {}
+raw_sounds = category_data.get("sounds", [])
+if not isinstance(raw_sounds, list):
+    raw_sounds = []
+sounds = []
+for sound in raw_sounds:
+    if not isinstance(sound, dict):
+        continue
+    file_ref = sound.get("file")
+    if not isinstance(file_ref, str):
+        continue
+    if not file_ref or "\x00" in file_ref or "\n" in file_ref or "\r" in file_ref:
+        continue
+    if file_ref.startswith("/"):
+        continue
+    sounds.append({"file": file_ref})
+
 if not sounds:
-    print("PEON_EXIT=true")
-    sys.exit(0)
+    exit_now()
 
 last_played = state.get("last_played", {})
+if not isinstance(last_played, dict):
+    last_played = {}
 last_file = last_played.get(category, "")
 candidates = sounds if len(sounds) <= 1 else [s for s in sounds if s.get("file") != last_file]
 pick = random.choice(candidates)
@@ -117,20 +170,46 @@ else:
 
 pack_root = os.path.realpath(pack_dir) + os.sep
 if not candidate.startswith(pack_root):
-    print("PEON_EXIT=true")
-    sys.exit(0)
+    exit_now()
+if not os.path.isfile(candidate):
+    exit_now()
 
 last_played[category] = file_ref
 state["last_played"] = last_played
 os.makedirs(os.path.dirname(state_file) or ".", exist_ok=True)
-json.dump(state, open(state_file, "w"))
+with open(state_file, "w", encoding="utf-8") as handle:
+    json.dump(state, handle)
 
 print("PEON_EXIT=false")
-print("SOUND_FILE=" + q(candidate))
-print("PAPLAY_VOLUME=" + q(str(paplay_volume)))
+print("SOUND_FILE_B64=" + base64.b64encode(candidate.encode("utf-8")).decode("ascii"))
+print("PAPLAY_VOLUME=" + str(paplay_volume))
 ' <<< "$INPUT" 2>/dev/null)"
 
+PEON_EXIT=true
+SOUND_FILE_B64=""
+PAPLAY_VOLUME=""
+while IFS='=' read -r key value; do
+  case "$key" in
+    PEON_EXIT) PEON_EXIT="$value" ;;
+    SOUND_FILE_B64) SOUND_FILE_B64="$value" ;;
+    PAPLAY_VOLUME) PAPLAY_VOLUME="$value" ;;
+  esac
+done <<< "$PY_OUT"
+
 [ "${PEON_EXIT:-true}" = "true" ] && exit 0
+[ -z "${SOUND_FILE_B64:-}" ] && exit 0
+
+if ! [[ "${PAPLAY_VOLUME:-}" =~ ^[0-9]+$ ]]; then
+  exit 0
+fi
+
+SOUND_FILE="$(python3 -c 'import base64,sys
+try:
+    print(base64.b64decode(sys.argv[1]).decode("utf-8"))
+except Exception:
+    print("")
+' "$SOUND_FILE_B64" 2>/dev/null || true)"
+
 [ -z "${SOUND_FILE:-}" ] && exit 0
 
 # Stop any previous sound from this runtime.
