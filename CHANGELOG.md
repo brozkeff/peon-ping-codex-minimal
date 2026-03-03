@@ -6,6 +6,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.12.0~20260303T173739Z] - 2026-03-03
+
+### Changed
+
+- Simplified the project to a single supported default Codex notify flow using `scripts/codex-notify.sh`.
+- Updated `README.md` to remove optional runtime/adapter instructions and document only default setup.
+- Updated installer output guidance to print an absolute notify hook path.
+
+### Removed
+
+- Removed unused optional runtime and adapter files: `peon.sh`, `adapters/codex.sh`, `config.json`, and `packs/peon-minimal/openpeon.json`.
+- Removed tracked runtime state artifacts from repository: `.sound.pid` and `.state.json`.
+
 ## [2.12.0~20260303T173312Z] - 2026-03-03
 
 ### Changed
