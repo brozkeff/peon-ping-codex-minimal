@@ -96,3 +96,5 @@ This fork reuses only a few sound samples from the original project and replaces
 its prior logic with the minimal Python notify flow documented above.
 
 Original upstream repository: <https://github.com/PeonPing/peon-ping>
+
+Note: Original repository is bloated and may have bigger potential attack surface.
