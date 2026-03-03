@@ -23,5 +23,5 @@ if ! command -v paplay >/dev/null 2>&1 && \
 fi
 
 echo "Installed to: $DEST_DIR"
-echo "Set ~/.codex/config.toml notify to:"
-echo 'notify = ["bash", "~/.codex/peon-ping/scripts/codex-notify.sh"]'
+echo "Set $HOME/.codex/config.toml notify to:"
+printf 'notify = ["bash", "%s"]\n' "$DEST_DIR/scripts/codex-notify.sh"

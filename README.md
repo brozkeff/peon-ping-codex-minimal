@@ -6,11 +6,6 @@ Original upstream repository: <https://github.com/PeonPing/peon-ping>
 
 Project change history: [CHANGELOG.md](CHANGELOG.md)
 
-Current fork version: `2.12.0~20260303T171821Z`
-
-Versioning note: this fork keeps the upstream base version and appends
-`~YYYYMMDDTHHMMSSZ` for timestamped fork releases.
-
 This repo contains a minimal sound pack plus two integration paths:
 
 - `scripts/codex-notify.sh`: simple notify hook for `agent-turn-complete`
