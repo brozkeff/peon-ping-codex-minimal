@@ -19,7 +19,6 @@ fi
 
 PAUSED=false
 [ -f "$PEON_DIR/.paused" ] && PAUSED=true
-INPUT=$(cat)
 
 PY_OUT="$(PEON_CONFIG="$CONFIG" PEON_STATE="$STATE" PEON_DIR="$PEON_DIR" PEON_PAUSED="$PAUSED" python3 -c '
 import base64
@@ -183,7 +182,7 @@ with open(state_file, "w", encoding="utf-8") as handle:
 print("PEON_EXIT=false")
 print("SOUND_FILE_B64=" + base64.b64encode(candidate.encode("utf-8")).decode("ascii"))
 print("PAPLAY_VOLUME=" + str(paplay_volume))
-' <<< "$INPUT" 2>/dev/null)"
+' 2>/dev/null)"
 
 PEON_EXIT=true
 SOUND_FILE_B64=""

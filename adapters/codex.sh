@@ -12,7 +12,10 @@ if [ -z "$RUNTIME_SCRIPT" ] || [ ! -f "$RUNTIME_SCRIPT" ] || [ ! -x "$RUNTIME_SC
 fi
 
 if [ ! -t 0 ]; then
-  RAW_STDIN="$(cat || true)"
+  RAW_STDIN="$(head -c 65537 || true)"
+  if [ "${#RAW_STDIN}" -gt 65536 ]; then
+    RAW_STDIN=""
+  fi
 fi
 
 if [ -z "$CODEX_EVENT" ]; then

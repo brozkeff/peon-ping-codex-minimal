@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Updated `peon.sh` runtime flow to parse structured key/value output from Python instead of using shell `eval`.
+- Updated `peon.sh` stdin flow to stream directly into Python parser instead of buffering full stdin in a shell variable.
 
 ### Fixed
 
@@ -35,3 +36,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Resolved `Medium` JSON handling risk in `scripts/codex-notify.sh`:
   - Reject oversized JSON argument payloads.
   - Require object payload and string `type` value.
+- Resolved `Medium` shell-buffering DoS risk in `adapters/codex.sh` by replacing unbounded stdin read with bounded `head -c` and oversize-drop behavior.
