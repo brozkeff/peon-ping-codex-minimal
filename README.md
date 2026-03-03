@@ -4,6 +4,8 @@ Minimal Warcraft III sound notifications for Codex on Linux.
 
 Original upstream repository: <https://github.com/PeonPing/peon-ping>
 
+Project change history: [CHANGELOG.md](CHANGELOG.md)
+
 This repo contains a minimal sound pack plus two integration paths:
 
 - `scripts/codex-notify.sh`: simple notify hook for `agent-turn-complete`
