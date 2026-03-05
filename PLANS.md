@@ -27,3 +27,17 @@
 - Remaining hardening backlog (non-blocking for this iteration):
   - add startup ownership/permission checks for runtime/config files under `~/.codex/peon-ping`
   - add minimal structured security logging for rejected events and runtime abort reasons
+
+## Completed (Iteration 3)
+
+- [x] Updated installed notifier filter behavior for multi-agent/council runs:
+  - top-level completion sounds only (`task_complete` and `agent-turn-complete`)
+  - subagent completion suppression via multi-key schema-tolerant detection
+  - dedicated alert classification for approval/escalation/sandbox events
+- [x] Added temporary JSONL event logging to validate real notify payload fields in local environment.
+
+## Iteration 3 Verification Plan
+
+- [ ] Run one multi-agent/council task and confirm only one completion sound at top-level end.
+- [ ] Trigger one approval/escalation path and confirm alert sound is played.
+- [ ] Review generated `notify-events-debug.jsonl` entries, then decide whether to keep or remove temporary logging.
