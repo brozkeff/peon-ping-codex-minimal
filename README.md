@@ -1,6 +1,6 @@
 # peon-ping-codex-minimal
 
-Minimal Codex sound notifications for Linux using a single Python notify hook.
+Minimal Codex sound notifications for Linux using a single Python notify hook. Plays completion sounds only for top-level `task_complete` and `agent-turn-complete` to avoid irrelevant notifications for spawned sub-agents in multi-agent (council) mode.
 
 Project change history: [CHANGELOG.md](CHANGELOG.md)
 
